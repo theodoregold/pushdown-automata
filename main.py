@@ -7,31 +7,28 @@ accepted_config = [] # here we will post end configuration that was accepted
 
 
 # production rules ("read input", "pop stack", "push stack", "next state")
-productions = {
-	"Q": [("a", "Z", "YZ", "Q"), ("a", "Y", "YY", "Q"), ("", "Z", "Z", "P"), ("", "Y", "Y", "P")], 
-	"P": [("a", "Z", "", "P"), ("a", "Y", "", "P"), ("", "Z", "", "F")]
-}
+productions = {}
 
 # all states or non-terminals (not really necessary)
-states = ["Q", "P", "F"]
+states = []
 
 # list of alphabet symbols or terminals (not really necessary)
-symbols = ["a"]
+symbols = []
 
 # list of stack alphabet symbols (not really necessary)
-stack_symbols = ["Z", "Y"]
+stack_symbols = []
 
 # start state
-start_symbol = "Q"
+start_symbol = ""
 
 # start stack symbol
-stack_start = "Z"
+stack_start = ""
 
 # list of acceptable states
-acceptable_states = ["F"]
+acceptable_states = []
 
 # E - accept on empty stack or F - acceptable state (default is false)
-accept_with = "E" 
+accept_with = ""
 
 
 
@@ -131,10 +128,58 @@ def is_found(state, input, stack):
 
 		return 0
 
+
 # print list of corrent configuration
 def print_config(config):
 	for i in config:
 		print i 
+
+
+def parse_file(filename):
+	global productions
+	global start_symbol
+	global start_stack
+	global acceptable_states
+	global accept_with
+
+	try:
+		lines = [line.rstrip() for line in open(filename)]
+
+	except:
+		return 0
+
+	# add start state
+	start_symbol = lines[3]
+
+	# add start stack symbol
+	start_stack = lines[4]
+
+	# list of acceptable states
+	acceptable_states.extend(lines[5].split())
+
+	# E - accept on empty stack or F - acceptable state (default is false)
+	accept_with = lines[6] 
+
+	# add rules
+	for i in range(7, len(lines)):
+		production = lines[i].split()
+
+		configuration = [(production[1], production[2], production[4], production[3])]
+
+		if not production[0] in productions.keys(): 
+			productions[production[0]] = []
+
+		configuration = [tuple(s if s != "e" else "" for s in tup) for tup in configuration]
+
+		productions[production[0]].extend(configuration)
+
+	print productions
+	print start_symbol
+	print start_stack
+	print acceptable_states
+	print accept_with
+
+	return 1
 
 
 # checks if symbol is terminal or non-terminal
@@ -148,15 +193,25 @@ def done():
 
 # UI
 # here it should read automata in from file
+filename = raw_input("Please enter your automata file:\n")
+while not parse_file(filename):
+	print "File not found!"
+	filename = raw_input("Please enter your automata file again:\n")
+print "Automata built."
 
 start_input = raw_input("Please enter your word:\n")
 print "Checking word \"" + start_input + "\" ..."
 
-# magic starts here
-if not generate(start_symbol, start_input, stack_start, [(start_symbol, start_input, stack_start)]):
-	done()
-else:
-	print_config(accepted_config) # show list of configurations to acceptance
-	done()
+while start_input != "end":
+	# magic starts here
+	if not generate(start_symbol, start_input, start_stack, [(start_symbol, start_input, start_stack)]):
+		done()
+	else:
+		print_config(accepted_config) # show list of configurations to acceptance
+		done()
 
+	start_input = raw_input("Enter your next word (or end):\n")
+	print "Checking word \"" + start_input + "\" ..."
+
+	
 
