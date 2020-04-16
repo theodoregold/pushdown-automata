@@ -1,5 +1,5 @@
 ### What is this?
-Describtion says it all.
+Description says it all.
 
 ### How to use?
 First you need create a automata file where you define your productions, start states and stuff like that.
